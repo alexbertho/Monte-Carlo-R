@@ -13,7 +13,7 @@
 
 \geometry{a4paper, margin=1in}
 
-\title{Mini-projet : Estimation d'aires par la methode de Monte Carlo}
+\title{Mini-projet: Estimation d'aires par la methode de Monte Carlo}
 \author{Alexandre Bertho}
 \date{\today}
 
@@ -110,22 +110,22 @@ P = \frac{\text{Aire du quart de disque}}{\text{Aire du carré}} = \frac{\sigma}
 
 Premirement on veut déterminer si un point de coordonnées ($x$, $y$) appartient à un cercle de centre (0, 0) et de rayon 1.
 \\[1\baselineskip]
-Un point ($x$, $y$) appartient au cercle si la distance entre ce point et le centre du cercle est inférieure ou égale au rayon $R$. Cette distance est calculée à l'aide de la formule de la distance :
+Un point ($x$, $y$) appartient au cercle si la distance entre ce point et le centre du cercle est inférieure ou égale au rayon $R$. Cette distance est calculée à l'aide de la formule de la distance:
 \[
 \sqrt{(x - a)^2 + (y - b)^2} \leq R
 \]
-Dans notre cas, $a = 0$ et $b = 0$, nous mettons au carré les deux côtés pour éviter de calculer la racine carrée  :
+Dans notre cas, $a = 0$ et $b = 0$, nous mettons au carré les deux côtés pour éviter de calculer la racine carrée:
 \[
 x^2 + y^2 \leq R^2
 \]
-Finalemnt, un point ($x$, $y$) appartient au cercle si :
+Finalemnt, un point ($x$, $y$) appartient au cercle si:
 \[
 x^2 + y^2 \leq 1
 \]
 
 \newpage
 
-Voici une fonction R qui permet d'estimer $\pi$ en utilisant la méthode de Monte Carlo :
+Voici une fonction R qui permet d'estimer $\pi$ en utilisant la méthode de Monte Carlo:
 
 \begin{lstlisting}
 mc.pi <- function(n) {
