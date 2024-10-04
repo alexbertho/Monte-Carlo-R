@@ -44,3 +44,93 @@ mc.pi <- function(n) {
 # plot(10 ** (1:p), tE, type='b', main='Temps moyen d\'une simulation', log='x', xlab='#points', ylab='Time')
 
 
+## Definition d'une fonction très utile
+creer_polygone <- function (x,y) {
+  matrix(c(x, x[1], y, y[1]), ncol=2,dimnames=list(c(), c("x","y")))
+}
+
+reg_poly <- function(n, r=1) {
+  theta <- seq(0, 2*pi, length.out=n)
+  x <- r * cos(theta)
+  y <- r * sin(theta)
+  creer_polygone(x, y)
+}
+
+boite <- function(polygone) {
+  x <- polygone[,"x"]
+  y <- polygone[,"y"]
+  matrix(c(min(x), max(x), min(y), max(y)), ncol=2, dimnames=list(c("min", "max"), c("x","y")))
+}
+
+points_aleatoires <- function(n, bo) {
+  # Définir une fonction points_aleatoires qui prend en argument un couple (n, bo), où n est un entier et bo une boîte rectangulaire, et renvoie une matrice M contenant n points tirés uniformément au hasard dans le rectangle r=[xmin;xmax]*[ymin;ymax]. Plus précisément, la matrice M est de taille n*2 et chaque ligne contient un point tiré uniformément au hasard dans le rectangle r.
+  x <- runif(n, bo["min","x"], bo["max","x"])
+  y <- runif(n, bo["min","y"], bo["max","y"])
+  matrix(c(x,y), ncol=2, dimnames=list(NULL, c("x","y")))
+}
+
+# Définir une fonction appartient(points, polygone) qui prend en arguments des points et un polygone, et renvoie pour chaque point TRUE si le point est à l’intérieur du polygone, FALSE sinon. On pourra s’appuyer sur une fonction auxiliaire appartient_poly(point, polygone) qui prend en arguments un point et un polygone, et renvoie TRUE si le point est à l’intérieur du polygone, FALSE sinon. On ne se souciera pas du résultat renvoyé par la fonction dans le cas où le point appartient à un des côtés du polygone. En théorie, les points seront tirés uniformément aléatoirement et la probabilité qu’un tel cas se produise sera nulle.
+
+#Indication: Lorsqu’un point est à l’intérieur d’un polygone, toute demi-droite partant de ce point possède un nombre impair d’intersections avec les côtés du polygone. Lorsqu’il est à l’extérieur, elle en possède nécessairement un nombre pair.
+
+#Vous pourrez utiliser le code suivant pout tester la fonction appartient.
+
+appartient <- function(points, polygone) {
+y <- polygone[,"y"]
+n <- length(x)
+x0 <- points["x"]
+y0 <- points["y"]
+# Compter le nombre d'intersections
+n_intersections <- 0
+for (i in 1:n) {
+  x1 <- x[i]
+  y1 <- y[i]
+  x2 <- x[i %% n + 1]
+  y2 <- y[i %% n + 1]
+  if ((y0 > y1) != (y0 > y2) && (y2 != y1) && (x0 < (x2 - x1) * (y0 - y1) / (y2 - y1) + x1)) {
+    n_intersections <- n_intersections + 1
+  }
+}
+return(n_intersections %% 2 == 1)
+}
+
+carre <- creer_polygone(c(10,10,90,90), c(30, 70, 70, 30))
+## Une permutation cyclique des points donne le même polygone
+carre <- creer_polygone(c(10,90,90,10), c(70, 70, 30, 30))
+# ## En revanche, le code suivant ne définit pas un rectangle,
+# ## mais un polygone dont les arêtes se croisent.
+papillon <- creer_polygone(c(10,90,10,90), c(30,70,70,30))
+# ## pour finir, voici un losange.
+losange <- creer_polygone(c(50,10,50,90),c(30,50,70,50))
+
+# print(carre)
+
+
+# plot(carre, type='l')
+# lines(papillon -1, type='b', col='firebrick')
+# lines(losange, type='l', col='darkblue')
+
+
+x <- c(0,0,9,11,11,9,8,11,9,6,3,3,8,9,9,8,2,2)
+y <- c(0,12,12,10,7,5,5,0,0,5,5,7,7,8,9,10,10,0)
+surprise <- creer_polygone(x,y)
+# plot(surprise,col="black", type="l")
+
+# print(losange)
+# bo <- boite(losange)
+# print(bo)
+
+bo <- matrix(c(3, 5, 6, 8),nrow=2, dimnames=list(c("min","max"), c("x","y")))
+pts <- points_aleatoires(5, bo)
+# print(pts)
+
+## Réaliser un test de la fonction
+carre <- creer_polygone(c(0, 0, 1, 1), c(0, 1, 1, 0))
+cc <- seq(from=-0.25,to=1.25,by=0.25)
+points <- do.call(rbind,lapply(cc, FUN=cbind, cc,deparse.level = 0))
+pin <- appartient(points,carre);
+## Dessiner le résultat du test
+par(mar=c(2,2,3,2)+0.1)
+plot(carre, type='l', main="Test de la fonction appartient", xlim=range(carre[,1],points[,1]), ylim=range(carre[,2],points[,2]))
+points(points[pin,1], points[pin,2], col='firebrick', pch=20)
+points(points[!pin,1], points[!pin,2], col='darkblue', pch=20)
