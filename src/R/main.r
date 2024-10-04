@@ -44,7 +44,6 @@ mc.pi <- function(n) {
 # plot(10 ** (1:p), tE, type='b', main='Temps moyen d\'une simulation', log='x', xlab='#points', ylab='Time')
 
 
-## Definition d'une fonction très utile
 creer_polygone <- function (x,y) {
   matrix(c(x, x[1], y, y[1]), ncol=2,dimnames=list(c(), c("x","y")))
 }
@@ -69,29 +68,61 @@ points_aleatoires <- function(n, bo) {
   matrix(c(x,y), ncol=2, dimnames=list(NULL, c("x","y")))
 }
 
-# Définir une fonction appartient(points, polygone) qui prend en arguments des points et un polygone, et renvoie pour chaque point TRUE si le point est à l’intérieur du polygone, FALSE sinon. On pourra s’appuyer sur une fonction auxiliaire appartient_poly(point, polygone) qui prend en arguments un point et un polygone, et renvoie TRUE si le point est à l’intérieur du polygone, FALSE sinon. On ne se souciera pas du résultat renvoyé par la fonction dans le cas où le point appartient à un des côtés du polygone. En théorie, les points seront tirés uniformément aléatoirement et la probabilité qu’un tel cas se produise sera nulle.
-
-#Indication: Lorsqu’un point est à l’intérieur d’un polygone, toute demi-droite partant de ce point possède un nombre impair d’intersections avec les côtés du polygone. Lorsqu’il est à l’extérieur, elle en possède nécessairement un nombre pair.
-
-#Vous pourrez utiliser le code suivant pout tester la fonction appartient.
-
-appartient <- function(points, polygone) {
-y <- polygone[,"y"]
-n <- length(x)
-x0 <- points["x"]
-y0 <- points["y"]
-# Compter le nombre d'intersections
-n_intersections <- 0
-for (i in 1:n) {
-  x1 <- x[i]
-  y1 <- y[i]
-  x2 <- x[i %% n + 1]
-  y2 <- y[i %% n + 1]
-  if ((y0 > y1) != (y0 > y2) && (y2 != y1) && (x0 < (x2 - x1) * (y0 - y1) / (y2 - y1) + x1)) {
-    n_intersections <- n_intersections + 1
+# Fonction auxiliaire pour vérifier si un point est à l'intérieur d'un polygone
+appartient_poly <- function(point, polygone) {
+  # Initialisation du compteur d'intersections
+  intersections <- 0
+  
+  # Boucler sur les côtés du polygone
+  for (i in 1:(nrow(polygone) - 1)) {
+    # Définir les coordonnées des points du côté
+    x1 <- polygone[i, 1]
+    y1 <- polygone[i, 2]
+    x2 <- polygone[i + 1, 1]
+    y2 <- polygone[i + 1, 2]
+    
+    # Vérifier si le côté coupe la demi-droite partant du point
+    if ((y1 <= point[2] && y2 > point[2]) || (y1 > point[2] && y2 <= point[2])) {
+      # Calculer la coordonnée x de l'intersection
+      x <- (point[2] - y1) * (x2 - x1) / (y2 - y1) + x1
+      
+      # Vérifier si l'intersection est à droite du point
+      if (x > point[1]) {
+        # Incrémenter le compteur d'intersections
+        intersections <- intersections + 1
+      }
+    }
   }
+  
+  # Vérifier si le dernier côté coupe la demi-droite partant du point
+  x1 <- polygone[nrow(polygone), 1]
+  y1 <- polygone[nrow(polygone), 2]
+  x2 <- polygone[1, 1]
+  y2 <- polygone[1, 2]
+  if ((y1 <= point[2] && y2 > point[2]) || (y1 > point[2] && y2 <= point[2])) {
+    x <- (point[2] - y1) * (x2 - x1) / (y2 - y1) + x1
+    if (x > point[1]) {
+      intersections <- intersections + 1
+    }
+  }
+  
+  # Renvoyer TRUE si le nombre d'intersections est impair, FALSE sinon
+  return(intersections %% 2 == 1)
 }
-return(n_intersections %% 2 == 1)
+
+# Fonction principale pour vérifier si des points sont à l'intérieur d'un polygone
+appartient <- function(points, polygone) {
+  # Initialisation du vecteur de résultats
+  resultats <- rep(FALSE, nrow(points))
+  
+  # Boucler sur les points
+  for (i in 1:nrow(points)) {
+    # Vérifier si le point est à l'intérieur du polygone
+    resultats[i] <- appartient_poly(points[i, ], polygone)
+  }
+  
+  # Renvoyer le vecteur de résultats
+  return(resultats)
 }
 
 carre <- creer_polygone(c(10,10,90,90), c(30, 70, 70, 30))
@@ -127,10 +158,13 @@ pts <- points_aleatoires(5, bo)
 ## Réaliser un test de la fonction
 carre <- creer_polygone(c(0, 0, 1, 1), c(0, 1, 1, 0))
 cc <- seq(from=-0.25,to=1.25,by=0.25)
-points <- do.call(rbind,lapply(cc, FUN=cbind, cc,deparse.level = 0))
+cat(points)
 pin <- appartient(points,carre);
-## Dessiner le résultat du test
-par(mar=c(2,2,3,2)+0.1)
-plot(carre, type='l', main="Test de la fonction appartient", xlim=range(carre[,1],points[,1]), ylim=range(carre[,2],points[,2]))
-points(points[pin,1], points[pin,2], col='firebrick', pch=20)
-points(points[!pin,1], points[!pin,2], col='darkblue', pch=20)
+# Dessiner le résultat du test
+# par(mar=c(2,2,3,2)+0.1)
+# plot(carre, type='l', main="Test de la fonction appartient", xlim=range(carre[,1],points[,1]), ylim=range(carre[,2],points[,2]))
+# points(points[pin,1], points[pin,2], col='firebrick', pch=20)
+# points(points[!pin,1], points[!pin,2], col='darkblue', pch=20)
+
+
+
